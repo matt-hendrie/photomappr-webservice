@@ -1,29 +1,20 @@
 import os
 import boto3
-import botocore
+import json
+import base64
 
-s3 = boto3.resource('photomappr-storage')
+s3 = boto3.resource('s3')
+bucket = s3.Bucket('photomappr-storage')
 
-def image_exists(bucket_name, key):
+def handler(event, context):
+    file_content = base64.b64decode(event['content'])
+    file_path = 'test'
+    #s3 = boto3.client('s3')
     try:
-        s3.Object(bucket_name=bucket_name, key=key).load()
-        except botocore.exceptions.ClientError:
-            return None
-
-def tag_image(bucket_name, key):
-    try:
-        s3.Object(bucket_name=bucket_name, key=key).load()
-        image_exists(bucket_name, key)
-    except botocore.exceptions.ClientError:
-        return None
-    obj = s3.Object(bucket_name=bucket_name, key=key)
-    obj_body = obj.get()['Body'].read
-
-def lambda_handler(event, context):
-    key = event('queryStringParameters').get('key', None)
-    image_url = tag_image(os.environ['BUCKET_NAME'], key)
-
+        s3_response = bucket.put_object(Key=file_path, Body=file_content)
+    except Exception as e:
+        raise IOError(e)
     return {
-        'StatusCode' : 301,
-        'body' : image_url
+        'statusCode': 200,
+        'body': 'hi'
     }
