@@ -90,10 +90,7 @@ def handler(event, context):
     arr = []
     if len(class_ids) > 0:
         for i in range(len(class_ids)):
-            objects[int(i)] = {}
-            objects[int(i)]["Label"] = labels[class_ids[i]]
-            arr.append(objects[int(i)])
-
+            arr.append(labels[class_ids[i]])
    
     return {
         'exif': exif,
