@@ -36,17 +36,24 @@ def handler(event, context):
     except Exception as e:
         raise IOError(e)
     
-    # Load image file from bucket and read with pillow
+    # Load image file from bucket
     image = s3.Object(bucket_name = 'photomappr-storage', key=file_path)
+    # Generate image url
+    url = boto3.client('s3').generate_presigned_url('get_object', Params = {'Bucket': 'photomappr-storage', 'Key': file_path})
+    image_url = url.split("?")
+    image_url = image_url[0]
+    # Open image with pillow
     obj_body = image.get()['Body'].read()
     img = Image.open(BytesIO(obj_body))
 
     # Exif tag code from https://stackoverflow.com/questions/4764932/in-python-how-do-i-read-the-exif-data-for-an-image
-    exif = {
-        ExifTags.TAGS[k]: v
-        for k, v in img._getexif().items()
-        if k in ExifTags.TAGS
-    }
+    exif = {}
+    if img._getexif():
+        exif = {
+            ExifTags.TAGS[k]: v
+            for k, v in img._getexif().items()
+            if k in ExifTags.TAGS
+        }
 
     # Object detection
     # First, convert image to numpy array
@@ -86,13 +93,13 @@ def handler(event, context):
                 accuracy.append(float(confidence))                                              
                 class_ids.append(class_id)
 
-    objects = {}
     arr = []
     if len(class_ids) > 0:
         for i in range(len(class_ids)):
             arr.append(labels[class_ids[i]])
    
     return {
+        'url': image_url,
         'exif': exif,
         'objects': arr
     }
