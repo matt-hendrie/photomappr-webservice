@@ -6,6 +6,7 @@ from PIL import Image, ExifTags
 from io import BytesIO
 import cv2
 import numpy as np
+import uuid
 
 def get_weights(weights_path):
     weightsPath = os.getcwd() + weights_path
@@ -30,7 +31,8 @@ def handler(event, context):
 
     # Get image in binary from api call, convert back and store in s3 bucket
     file_content = base64.b64decode(event['content'])
-    file_path = str(random.randint(1,100)) + ".jpg" 
+    # Generate unique image id
+    file_path = str(uuid.uuid4()) + ".jpg" 
     try:
         s3_response = bucket.put_object(Key=file_path, Body=file_content)
     except Exception as e:
