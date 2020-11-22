@@ -1,7 +1,6 @@
 import os
 import boto3
 import base64
-import random
 from PIL import Image, ExifTags
 from io import BytesIO
 import cv2
@@ -27,6 +26,7 @@ def load_model(configpath,weightspath):
 
 s3 = boto3.resource('s3')
 bucket = s3.Bucket('photomappr-storage')
+
 def handler(event, context):
 
     # Get image in binary from api call, convert back and store in s3 bucket
@@ -74,8 +74,7 @@ def handler(event, context):
     net_obj=load_model(CFG,Weights)
 
     # Object detection within image
-    class_ids = []                                                                              
-    accuracy = []                                                                               
+    class_ids = []                                                                                                                                                           
          
     lnames = net_obj.getLayerNames()                                                            
     layers = [lnames[i[0] - 1] for i in net_obj.getUnconnectedOutLayers()]                      
@@ -84,15 +83,14 @@ def handler(event, context):
             
     net_obj.setInput(blob)                                                                      
         
-    result_det = net_obj.forward(layers)                                                        
+    detections = net_obj.forward(layers)                                                        
     
-    for each_result in result_det:                                                              
+    for each_result in detections:                                                              
         for each in each_result:                                                                
             scores = each[5:]                                                                   
             class_id = np.argmax(scores)                                                        
             confidence = scores[class_id]                                                       
-            if confidence > 0.5:                                                                
-                accuracy.append(float(confidence))                                              
+            if confidence > 0.5:                                                                                                            
                 class_ids.append(class_id)
 
     arr = []
