@@ -24,6 +24,7 @@ def load_model(configpath,weightspath):
     net = cv2.dnn.readNetFromDarknet(configpath, weightspath)
     return net
 
+# S3 code adapted from https://www.obytes.com/blog/image-resizing-on-the-fly-with-aws-lambda-api-gateway-and-s3-storage
 s3 = boto3.resource('s3')
 bucket = s3.Bucket('photomappr-storage')
 
@@ -57,6 +58,7 @@ def handler(event, context):
             if k in ExifTags.TAGS
         }
 
+    # Image detection adapted from https://github.com/arunponnusamy/object-detection-opencv/blob/master/yolo_opencv.py
     # Object detection
     # First, convert image to numpy array
     np_array = np.fromstring(obj_body,np.uint8)                                   
